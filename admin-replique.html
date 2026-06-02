@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin · Repliqué Parfums</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#f7f3ee;--dark:#1a1612;--gold:#b89d6a;--gold-light:#d4bc8e;--muted:#8a7d6e;--border:#e0d8ce;--green:#2c7846;--red:#c0392b}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f0ebe3;font-family:'Josefin Sans',sans-serif;font-weight:300}
+
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+.login-box{background:var(--dark);border-radius:10px;padding:2.5rem 2rem;width:100%;max-width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.login-logo{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--gold-light);letter-spacing:.2em;margin-bottom:.3rem}
+.login-sub{font-size:.55rem;letter-spacing:.3em;color:var(--muted);text-transform:uppercase;margin-bottom:2rem}
+.login-label{font-size:.55rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;text-align:left;display:block;margin-bottom:.4rem}
+.login-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:white;font-family:'Josefin Sans',sans-serif;font-size:1.4rem;letter-spacing:.5em;text-align:center;padding:.7rem;border-radius:4px;outline:none;-webkit-appearance:none}
+.login-input:focus{border-color:var(--gold)}
+.login-btn{margin-top:1.2rem;width:100%;background:var(--gold);color:var(--dark);border:none;font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;padding:.75rem;border-radius:4px;cursor:pointer;font-weight:400}
+.login-err{font-size:.65rem;color:#e07070;margin-top:.7rem;letter-spacing:.08em}
+
+.app{display:none}
+.topbar{background:var(--dark);padding:.8rem 1.2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-logo{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold-light);letter-spacing:.18em}
+.topbar-badge{background:rgba(184,157,106,.2);color:var(--gold-light);font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;padding:.25rem .6rem;border-radius:2px}
+.topbar-btn{background:none;border:1px solid rgba(255,255,255,.2);color:#8a7d6e;font-family:'Josefin Sans',sans-serif;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem .7rem;cursor:pointer;border-radius:2px}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px}
+.stat-card{background:white;border-radius:6px;padding:.85rem;border:1px solid var(--border)}
+.stat-num{font-size:1.6rem;color:var(--dark);font-family:'Cormorant Garamond',serif}
+.stat-label{font-size:.52rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-top:.1rem}
+
+.section-title{font-size:.58rem;letter-spacing:.22em;color:var(--muted);text-transform:uppercase;padding:.5rem 1.2rem;border-bottom:1px solid var(--border);background:var(--cream)}
+
+.toolbar{display:flex;gap:.5rem;padding:.7rem 1rem;border-bottom:1px solid var(--border);background:var(--cream);flex-wrap:wrap;align-items:center}
+.tb-search{flex:1;min-width:140px;background:white;border:1px solid var(--border);font-family:'Josefin Sans',sans-serif;font-size:.8rem;padding:.4rem .7rem;border-radius:2px;outline:none}
+.tb-search:focus{border-color:var(--gold)}
+.tb-filter{background:none;border:1px solid var(--border);color:var(--muted);font-family:'Josefin Sans',sans-serif;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;padding:.38rem .65rem;cursor:pointer;border-radius:2px;white-space:nowrap}
+.tb-filter.active{background:var(--dark);border-color:var(--dark);color:var(--gold-light)}
+.add-btn{background:var(--dark);border:none;color:var(--gold-light);font-family:'Josefin Sans',sans-serif;font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;padding:.4rem .9rem;cursor:pointer;border-radius:2px;margin-left:auto;white-space:nowrap}
+
+.product-list{padding:8px;display:flex;flex-direction:column;gap:6px}
+.p-item{background:white;border-radius:6px;border:1px solid var(--border);display:flex;align-items:center;gap:.7rem;padding:.6rem .8rem;transition:border-color .2s}
+.p-item.sin-stock{opacity:.65}
+.p-foto{width:48px;height:48px;border-radius:4px;object-fit:cover;flex-shrink:0;background:#f0ebe4}
+.p-info{flex:1;min-width:0}
+.p-nombre{font-size:.85rem;color:var(--dark);font-family:'Cormorant Garamond',serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-replica{font-size:.52rem;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-precio{font-size:.8rem;color:var(--dark);font-weight:500;white-space:nowrap}
+.p-stock-badge{font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .45rem;border-radius:2px;white-space:nowrap}
+.badge-ok{background:#e8f5e9;color:#2c7846}
+.badge-no{background:#fce4e4;color:#c0392b}
+.p-actions{display:flex;flex-direction:column;gap:.3rem;flex-shrink:0}
+.p-btn{background:var(--cream);border:1px solid var(--border);color:var(--muted);font-family:'Josefin Sans',sans-serif;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;padding:.28rem .55rem;cursor:pointer;border-radius:2px;white-space:nowrap}
+.p-btn:hover{background:var(--dark);border-color:var(--dark);color:var(--gold-light)}
+.p-btn.btn-toggle-off{border-color:#c0392b;color:#c0392b}
+.p-btn.btn-toggle-off:hover{background:#c0392b;color:white}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal-box{background:#f7f3ee;width:100%;max-width:400px;border-radius:8px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.3);max-height:90vh;display:flex;flex-direction:column}
+.modal-header{background:#1a1612;padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-header h3{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:300;color:#d4bc8e}
+.modal-header button{background:none;border:none;color:#8a7d6e;font-size:1.1rem;cursor:pointer}
+.modal-body{padding:1.2rem;overflow-y:auto;flex:1}
+.mfield{margin-bottom:.85rem}
+.mfield label{display:block;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:#8a7d6e;margin-bottom:.3rem}
+.mfield input,.mfield select{width:100%;background:white;border:1px solid #e0d8ce;color:#1a1612;font-family:'Josefin Sans',sans-serif;font-size:.9rem;padding:.48rem .7rem;outline:none;border-radius:2px;-webkit-appearance:none}
+.mfield input:focus,.mfield select:focus{border-color:#b89d6a}
+.mfield small{font-size:.6rem;color:#8a7d6e;margin-top:.2rem;display:block}
+.precio-preview{background:#f0ebe4;border-radius:4px;padding:.6rem .85rem;margin-bottom:.85rem;font-size:.7rem;color:#8a7d6e;letter-spacing:.1em}
+.precio-preview strong{color:#1a1612;font-size:.95rem;font-family:'Cormorant Garamond',serif}
+.modal-footer{padding:.8rem 1.2rem;border-top:1px solid #e0d8ce;display:flex;gap:.5rem;justify-content:flex-end;flex-shrink:0}
+.mbtn{padding:.5rem 1.2rem;font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer}
+.mbtn-cancel{background:transparent;border:1px solid #e0d8ce;color:#8a7d6e}
+.mbtn-ok{background:#1a1612;color:#d4bc8e}
+.save-msg{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#1a1612;color:#d4bc8e;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;padding:.6rem 1.2rem;border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.3);z-index:300;transition:opacity .3s}
+.save-msg.hidden{opacity:0;pointer-events:none}
+.pedido-item{background:#fff;border-radius:4px;padding:.5rem .8rem;margin-bottom:.4rem;border:1px solid var(--border);font-size:.75rem}
+.pedido-row{display:flex;justify-content:space-between;align-items:center;gap:.5rem}
+.pedido-nombre{color:var(--dark);font-family:'Cormorant Garamond',serif}
+.pedido-qty{font-size:.65rem;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo">Repliqué</div>
+    <div class="login-sub">Panel Administración</div>
+    <label class="login-label">PIN de acceso</label>
+    <input type="password" id="pinInput" class="login-input" maxlength="6" placeholder="······" onkeydown="if(event.key==='Enter')verificarPin()">
+    <button class="login-btn" onclick="verificarPin()">Ingresar</button>
+    <div class="login-err" id="pinErr"></div>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <div class="topbar">
+    <span class="topbar-logo">Repliqué <span class="topbar-badge">Admin</span></span>
+    <button class="topbar-btn" onclick="cerrarSesion()">Salir</button>
+  </div>
+  
+  <div class="stats-row" id="statsRow"></div>
+  
+  <div style="padding:8px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="add-btn" onclick="abrirModalPedido()" style="background:#4a7090">📋 Pedido al proveedor</button>
+    <button class="add-btn" onclick="abrirModalNuevo()">+ Agregar perfume</button>
+  </div>
+
+  <div class="section-title">Productos (se actualiza desde Google Sheets)</div>
+  <div class="toolbar">
+    <input type="search" class="tb-search" id="adminSearch" placeholder="Buscar..." oninput="renderAdmin()">
+    <button class="tb-filter active" data-fil="all" onclick="filtroAdmin(this,'all')">Todos</button>
+    <button class="tb-filter" data-fil="stock" onclick="filtroAdmin(this,'stock')">Con stock</button>
+    <button class="tb-filter" data-fil="sinstock" onclick="filtroAdmin(this,'sinstock')">Sin stock</button>
+  </div>
+  <div class="product-list" id="adminList"></div>
+</div>
+
+<!-- Modal editar -->
+<div class="modal-overlay" id="modalEditar" onclick="if(event.target===this)cerrarEditar()">
+  <div class="modal-box">
+    <div class="modal-header"><h3 id="modalTitulo">Editar</h3><button onclick="cerrarEditar()">✕</button></div>
+    <div class="modal-body">
+      <div class="mfield"><label>Nombre del perfume</label><input type="text" id="eNombre"></div>
+      <div class="mfield"><label>Notas</label><input type="text" id="eNotas"></div>
+      <div class="mfield"><label>ML</label><input type="number" id="eMl" min="0"></div>
+      <div class="mfield"><label>Cantidad en stock</label><input type="number" id="eCantidad" min="0" oninput="calcPrecio()"></div>
+      <div class="mfield">
+        <label>Precio costo ($)</label>
+        <input type="number" id="eCosto" min="0" step="100" oninput="calcPrecio()">
+      </div>
+      <div class="mfield">
+        <label>Margen (%)</label>
+        <input type="number" id="eMargen" min="0" step="5" oninput="calcPrecio()">
+      </div>
+      <div class="precio-preview">Precio venta: <strong id="precioPreview">$ 0</strong></div>
+      <div class="mfield">
+        <label>Stock</label>
+        <select id="eStock">
+          <option value="1">Con stock</option>
+          <option value="0">Sin stock</option>
+        </select>
+      </div>
+      <div class="mfield">
+        <label>Activo en catálogo</label>
+        <select id="eActivo">
+          <option value="si">Sí (visible)</option>
+          <option value="no">No (oculto)</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="mbtn mbtn-cancel" onclick="cerrarEditar()">Cancelar</button>
+      <button class="mbtn mbtn-ok" onclick="guardarEditar()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nuevo perfume -->
+<div class="modal-overlay" id="modalNuevo" onclick="if(event.target===this)cerrarNuevo()">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Agregar perfume</h3><button onclick="cerrarNuevo()">✕</button></div>
+    <div class="modal-body">
+      <div class="mfield"><label>Nombre *</label><input type="text" id="nNombre"></div>
+      <div class="mfield">
+        <label>Línea *</label>
+        <select id="nLinea">
+          <option value="Yves D'Orgeval Mujer">YD Mujer</option>
+          <option value="Yves D'Orgeval Hombre">YD Hombre</option>
+          <option value="Árabes">Árabes</option>
+        </select>
+      </div>
+      <div class="mfield">
+        <label>Género</label>
+        <select id="nGenero">
+          <option value="Mujer">Mujer</option>
+          <option value="Hombre">Hombre</option>
+        </select>
+      </div>
+      <div class="mfield"><label>ML</label><input type="number" id="nMl" value="100" min="0"></div>
+      <div class="mfield"><label>Notas</label><input type="text" id="nNotas"></div>
+      <div class="mfield"><label>Inspirado en (marca original)</label><input type="text" id="nInspira" placeholder="NOMBRE - MARCA"></div>
+      <div class="mfield"><label>URL de imagen</label><input type="text" id="nImagen" placeholder="https://..."></div>
+      <div class="mfield"><label>Precio costo ($) *</label><input type="number" id="nCosto" min="0" step="100" oninput="calcPrecioNuevo()"></div>
+      <div class="mfield"><label>Margen (%)</label><input type="number" id="nMargen" value="120" min="0" oninput="calcPrecioNuevo()"></div>
+      <div class="precio-preview">Precio venta: <strong id="precioPreviewN">$ 0</strong></div>
+      <div class="mfield"><label>Cantidad inicial</label><input type="number" id="nCantidad" value="5" min="0"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="mbtn mbtn-cancel" onclick="cerrarNuevo()">Cancelar</button>
+      <button class="mbtn mbtn-ok" onclick="guardarNuevo()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal pedido proveedor -->
+<div class="modal-overlay" id="modalPedido" onclick="if(event.target===this)document.getElementById('modalPedido').classList.remove('open')">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Sugerencia pedido proveedor</h3><button onclick="document.getElementById('modalPedido').classList.remove('open')">✕</button></div>
+    <div class="modal-body" id="pedidoBody"></div>
+    <div class="modal-footer">
+      <button class="mbtn mbtn-ok" onclick="enviarPedidoWA()">📤 Enviar por WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<div class="save-msg hidden" id="saveMsg">Guardando en Google Sheets...</div>
+
+<script>
+const SHEET_ID = "1h4Qz-OmKKEBM6zJBiFUu9UPqVgrIhQZjhWGk_EYZt8I";
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+const PIN = "1234"; // ← Cambiar este PIN
+const WA = "5492267406792";
+
+let products = [];
+let editingId = null;
+let adminFiltro = "all";
+
+// ====== LOGIN ======
+function verificarPin() {
+  const val = document.getElementById('pinInput').value;
+  if(val === PIN) {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    cargarProductos();
+  } else {
+    document.getElementById('pinErr').textContent = 'PIN incorrecto';
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinInput').focus();
+  }
+}
+function cerrarSesion() {
+  document.getElementById('loginWrap').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('pinInput').value = '';
+}
+
+// ====== CARGA DE DATOS ======
+function parseCsvLine(line) {
+  const result = [];
+  let cur = '', inQ = false;
+  for(let i=0;i<line.length;i++) {
+    const c = line[i];
+    if(c==='"') { inQ=!inQ; continue; }
+    if(c===','&&!inQ) { result.push(cur); cur=''; continue; }
+    cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+
+async function cargarProductos() {
+  try {
+    const res = await fetch(CSV_URL+'&t='+Date.now());
+    const text = await res.text();
+    const lines = text.split('\n');
+    const headers = parseCsvLine(lines[0]);
+    const loaded = [];
+    for(let i=1;i<lines.length;i++) {
+      if(!lines[i].trim()) continue;
+      const cols = parseCsvLine(lines[i]);
+      const obj = {};
+      headers.forEach((h,idx)=>obj[h.trim()]=cols[idx]||'');
+      loaded.push({
+        id: obj.id,
+        nombre: obj.nombre,
+        linea: obj.linea,
+        genero: obj.genero,
+        ml: obj.ml,
+        notas: obj.notas,
+        precio_costo: parseFloat(obj.precio_costo)||0,
+        precio_venta: parseInt(obj.precio_venta)||0,
+        margen: parseInt(obj.margen)||120,
+        stock: parseInt(obj.stock)||0,
+        cantidad: parseInt(obj.cantidad)||0,
+        imagen: obj.imagen,
+        activo: obj.activo,
+        inspirado_en: obj.inspirado_en
+      });
+    }
+    products = loaded;
+    renderStats();
+    renderAdmin();
+  } catch(e) {
+    console.error('Error cargando:', e);
+  }
+}
+
+// ====== STATS ======
+function renderStats() {
+  const total = products.length;
+  const conStock = products.filter(p=>p.stock>0&&p.cantidad>0).length;
+  const sinStock = total - conStock;
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Productos</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${conStock}</div><div class="stat-label">Con stock</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--red)">${sinStock}</div><div class="stat-label">Sin stock</div></div>
+  `;
+}
+
+// ====== RENDER ADMIN ======
+function filtroAdmin(btn, fil) {
+  adminFiltro = fil;
+  document.querySelectorAll('.tb-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAdmin();
+}
+
+function renderAdmin() {
+  const q = document.getElementById('adminSearch').value.toLowerCase().trim();
+  let list = [...products];
+  if(adminFiltro==='stock') list=list.filter(p=>p.stock>0&&p.cantidad>0);
+  if(adminFiltro==='sinstock') list=list.filter(p=>p.stock===0||p.cantidad<=0);
+  if(q) list=list.filter(p=>(p.nombre||'').toLowerCase().includes(q)||(p.inspirado_en||'').toLowerCase().includes(q));
+  list.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  
+  const container = document.getElementById('adminList');
+  container.innerHTML = '';
+  
+  if(!list.length) { container.innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.75rem;letter-spacing:.12em">No se encontraron productos</div>'; return; }
+  
+  list.forEach(p => {
+    const hasStock = p.stock>0 && p.cantidad>0;
+    const div = document.createElement('div');
+    div.className = 'p-item'+(hasStock?'':' sin-stock');
+    div.innerHTML = `
+      <img class="p-foto" src="${p.imagen||''}" alt="${p.nombre}" onerror="this.style.background='#e0d8ce';this.src=''">
+      <div class="p-info">
+        <div class="p-nombre">${p.nombre}</div>
+        <div class="p-replica">${p.inspirado_en||'—'}</div>
+        <div style="display:flex;gap:.4rem;align-items:center;margin-top:.2rem;flex-wrap:wrap">
+          <span class="p-precio">$ ${Math.round(p.precio_venta).toLocaleString('es-AR')}</span>
+          <span class="p-stock-badge ${hasStock?'badge-ok':'badge-no'}">${hasStock?p.cantidad+' uds':'Sin stock'}</span>
+          ${p.activo==='no'?'<span class="p-stock-badge" style="background:#fff3cd;color:#856404">Oculto</span>':''}
+        </div>
+      </div>
+      <div class="p-actions">
+        <button class="p-btn" onclick="abrirEditar('${p.id}')">✎ Editar</button>
+        <button class="p-btn ${hasStock?'':'btn-toggle-off'}" onclick="toggleStock('${p.id}', ${hasStock?0:1})">${hasStock?'✓ Stock':'✗ Sin stock'}</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ====== TOGGLE STOCK RAPIDO ======
+async function toggleStock(id, newStock) {
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  p.stock = newStock;
+  if(newStock===0) p.cantidad=0;
+  else if(p.cantidad===0) p.cantidad=1;
+  renderStats();
+  renderAdmin();
+  await guardarEnSheets(p);
+}
+
+// ====== EDITAR ======
+function abrirEditar(id) {
+  const p = products.find(x=>x.id===id);
+  if(!p) return;
+  editingId = id;
+  document.getElementById('modalTitulo').textContent = p.nombre;
+  document.getElementById('eNombre').value = p.nombre;
+  document.getElementById('eNotas').value = p.notas;
+  document.getElementById('eMl').value = p.ml;
+  document.getElementById('eCantidad').value = p.cantidad;
+  document.getElementById('eCosto').value = p.precio_costo;
+  document.getElementById('eMargen').value = p.margen;
+  document.getElementById('eStock').value = p.stock;
+  document.getElementById('eActivo').value = p.activo;
+  calcPrecio();
+  document.getElementById('modalEditar').classList.add('open');
+}
+function cerrarEditar() { document.getElementById('modalEditar').classList.remove('open'); editingId=null; }
+
+function calcPrecio() {
+  const c = parseFloat(document.getElementById('eCosto').value)||0;
+  const m = parseFloat(document.getElementById('eMargen').value)||0;
+  const v = Math.round(c*(1+m/100));
+  document.getElementById('precioPreview').textContent='$ '+v.toLocaleString('es-AR');
+}
+
+async function guardarEditar() {
+  const p = products.find(x=>x.id===editingId);
+  if(!p) return;
+  p.nombre = document.getElementById('eNombre').value.trim()||p.nombre;
+  p.notas = document.getElementById('eNotas').value.trim();
+  p.ml = document.getElementById('eMl').value;
+  p.cantidad = parseInt(document.getElementById('eCantidad').value)||0;
+  p.precio_costo = parseFloat(document.getElementById('eCosto').value)||p.precio_costo;
+  p.margen = parseFloat(document.getElementById('eMargen').value)||p.margen;
+  p.precio_venta = Math.round(p.precio_costo*(1+p.margen/100));
+  p.stock = parseInt(document.getElementById('eStock').value);
+  p.activo = document.getElementById('eActivo').value;
+  cerrarEditar();
+  renderStats();
+  renderAdmin();
+  await guardarEnSheets(p);
+}
+
+// ====== AGREGAR NUEVO ======
+function abrirModalNuevo() {
+  document.getElementById('nNombre').value='';
+  document.getElementById('nNotas').value='';
+  document.getElementById('nMl').value='100';
+  document.getElementById('nInspira').value='';
+  document.getElementById('nImagen').value='';
+  document.getElementById('nCosto').value='';
+  document.getElementById('nMargen').value='120';
+  document.getElementById('nCantidad').value='5';
+  calcPrecioNuevo();
+  document.getElementById('modalNuevo').classList.add('open');
+}
+function cerrarNuevo() { document.getElementById('modalNuevo').classList.remove('open'); }
+
+function calcPrecioNuevo() {
+  const c = parseFloat(document.getElementById('nCosto').value)||0;
+  const m = parseFloat(document.getElementById('nMargen').value)||120;
+  const v = Math.round(c*(1+m/100));
+  document.getElementById('precioPreviewN').textContent='$ '+v.toLocaleString('es-AR');
+}
+
+async function guardarNuevo() {
+  const nombre = document.getElementById('nNombre').value.trim();
+  const costo = parseFloat(document.getElementById('nCosto').value)||0;
+  if(!nombre||!costo) { alert('Completá al menos nombre y precio costo'); return; }
+  const margen = parseFloat(document.getElementById('nMargen').value)||120;
+  const maxId = products.length>0 ? Math.max(...products.map(p=>parseInt(p.id)||0)) : 0;
+  const nuevo = {
+    id: String(maxId+1),
+    nombre,
+    linea: document.getElementById('nLinea').value,
+    genero: document.getElementById('nGenero').value,
+    ml: document.getElementById('nMl').value,
+    notas: document.getElementById('nNotas').value.trim(),
+    precio_costo: costo,
+    precio_venta: Math.round(costo*(1+margen/100)),
+    margen,
+    stock: 1,
+    cantidad: parseInt(document.getElementById('nCantidad').value)||5,
+    imagen: document.getElementById('nImagen').value.trim(),
+    activo: 'si',
+    inspirado_en: document.getElementById('nInspira').value.trim()
+  };
+  products.push(nuevo);
+  cerrarNuevo();
+  renderStats();
+  renderAdmin();
+  await guardarEnSheets(nuevo, true);
+}
+
+// ====== GUARDAR EN SHEETS ======
+async function guardarEnSheets(producto, esNuevo=false) {
+  mostrarMsg('Guardando en Google Sheets...');
+  // Preparar el mensaje para WhatsApp con los cambios
+  const accion = esNuevo ? '✅ NUEVO PERFUME' : '✏️ PRODUCTO MODIFICADO';
+  const msg = `${accion}\n` +
+    `Nombre: ${producto.nombre}\n` +
+    `Precio venta: $ ${Math.round(producto.precio_venta).toLocaleString('es-AR')}\n` +
+    `Stock: ${producto.stock>0?'Sí':'No'} (${producto.cantidad} uds)\n` +
+    `Activo: ${producto.activo}\n\n` +
+    `⚠️ Actualizar fila ID=${producto.id} en Google Sheets`;
+  
+  // Intentar actualizar via Google Apps Script (si está configurado)
+  // Por ahora, se descarga el CSV actualizado
+  descargarCSV();
+  setTimeout(()=>ocultarMsg(),3000);
+}
+
+function descargarCSV() {
+  const headers = ['id','nombre','linea','genero','ml','notas','precio_costo','precio_venta','margen','stock','cantidad','imagen','activo','inspirado_en'];
+  let csv = headers.join(',')+('\r\n');
+  products.forEach(p=>{
+    const row = headers.map(h=>{
+      const v = String(p[h]||'');
+      return v.includes(',') ? '"'+v+'"' : v;
+    });
+    csv += row.join(',')+'\r\n';
+  });
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='replique_productos.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  mostrarMsg('✅ CSV descargado. Importalo a Google Sheets');
+  setTimeout(()=>ocultarMsg(),5000);
+}
+
+function mostrarMsg(txt) {
+  const el=document.getElementById('saveMsg');
+  el.textContent=txt; el.classList.remove('hidden');
+}
+function ocultarMsg() { document.getElementById('saveMsg').classList.add('hidden'); }
+
+// ====== PEDIDO PROVEEDOR ======
+function abrirModalPedido() {
+  const sinStock = products.filter(p=>p.stock===0||p.cantidad<=0).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  let html = '';
+  if(sinStock.length===0) {
+    html='<div style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.75rem">🎉 Todos los productos tienen stock</div>';
+  } else {
+    sinStock.forEach(p=>{
+      html += `<div class="pedido-item"><div class="pedido-row"><span class="pedido-nombre">${p.nombre}</span><span class="pedido-qty">Sin stock · ${p.ml||'—'} ml</span></div>${p.inspirado_en?'<div style="font-size:.6rem;color:var(--muted);margin-top:.15rem">'+p.inspirado_en+'</div>':''}</div>`;
+    });
+  }
+  document.getElementById('pedidoBody').innerHTML=html;
+  document.getElementById('modalPedido').classList.add('open');
+}
+
+function enviarPedidoWA() {
+  const sinStock=products.filter(p=>p.stock===0||p.cantidad<=0);
+  if(sinStock.length===0) return;
+  let msg='📦 PEDIDO PROVEEDOR\n\n';
+  sinStock.forEach(p=>msg+=`• ${p.nombre}${p.ml?' ('+p.ml+'ml)':''}\n`);
+  msg+='\n_Generado desde Repliqué Admin_';
+  window.open('https://wa.me/${WA}?text='+encodeURIComponent(msg),'_blank');
+}
+
+// Recargar datos cada 5 minutos
+setInterval(()=>{ if(document.getElementById('app').style.display==='block') cargarProductos(); }, 300000);
+</script>
+</body>
+</html>

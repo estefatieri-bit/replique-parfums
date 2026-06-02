@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Repliqué Parfums</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Josefin+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#f7f3ee;--dark:#1a1612;--gold:#b89d6a;--gold-light:#d4bc8e;--muted:#8a7d6e;--border:#e0d8ce;--offer:#801D33;--arab:#a27840;--green:#2c7846;--wa:#25D366}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--cream);color:var(--dark);font-family:'Josefin Sans',sans-serif;font-weight:300}
+
+.header{background:var(--dark);padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--gold-light);letter-spacing:.22em}
+.header-sub{font-size:.5rem;letter-spacing:.3em;color:var(--muted);text-transform:uppercase}
+
+.filtros{display:flex;gap:.4rem;padding:.7rem 1rem;overflow-x:auto;border-bottom:1px solid var(--border);scrollbar-width:none}
+.filtros::-webkit-scrollbar{display:none}
+.fbtn{flex-shrink:0;background:none;border:1px solid var(--border);color:var(--muted);font-family:'Josefin Sans',sans-serif;font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;padding:.38rem .7rem;cursor:pointer;transition:all .2s}
+.fbtn.active,.fbtn:hover{background:var(--dark);border-color:var(--dark);color:var(--gold-light)}
+.fbtn.arab{border-color:var(--arab);color:var(--arab)}
+.fbtn.arab.active{background:var(--arab);border-color:var(--arab);color:#fff}
+
+.busqueda{padding:.5rem 1rem;border-bottom:1px solid var(--border)}
+.busqueda input{width:100%;background:white;border:1px solid var(--border);color:var(--dark);font-family:'Josefin Sans',sans-serif;font-size:.85rem;padding:.5rem .85rem;outline:none;border-radius:2px}
+.busqueda input:focus{border-color:var(--gold)}
+
+.contador{padding:.4rem .9rem;font-size:.56rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)}
+
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:10px}
+@media(min-width:500px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:800px){.grid{grid-template-columns:repeat(4,1fr);gap:14px;padding:14px 1.5rem}}
+@media(min-width:1100px){.grid{grid-template-columns:repeat(5,1fr)}}
+
+.card{background:white;border:1px solid #ddd6ce;border-radius:6px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 2px 12px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.07);animation:fu .35s ease both;transition:box-shadow .2s}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card.sinstock{opacity:.7}
+.card-foto{position:relative;aspect-ratio:1;overflow:hidden;background:#f0ebe4}
+.card-foto img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+.card:hover .card-foto img{transform:scale(1.04)}
+.noimg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:2rem}
+
+.badge{position:absolute;font-size:.48rem;letter-spacing:.12em;text-transform:uppercase;padding:.22rem .55rem;font-family:'Josefin Sans',sans-serif}
+.badge-tr{top:.5rem;right:.5rem}
+.b-stock{background:var(--green);color:white}
+.b-nostock{background:#999;color:white}
+.b-arabe{background:var(--arab);color:white}
+.b-mujer{background:#c06080;color:white}
+.b-hombre{background:#4a7090;color:white}
+
+.card-body{padding:.7rem;flex:1;display:flex;flex-direction:column;gap:.25rem}
+.c-replica{font-size:.47rem;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;line-height:1.3;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.c-nombre{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--dark);line-height:1.2}
+.c-ml{font-size:.55rem;letter-spacing:.15em;color:var(--muted);text-transform:uppercase}
+.c-precio{display:flex;align-items:baseline;gap:.4rem;margin-top:.15rem}
+.c-precio-val{font-size:.95rem;color:var(--dark);font-weight:500}
+.c-precio-val.nostock{color:#aaa}
+
+.btn-wa{display:flex;align-items:center;justify-content:center;gap:.35rem;background:var(--wa);color:white;text-decoration:none;font-family:'Josefin Sans',sans-serif;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;padding:.5rem;margin-top:auto;border-radius:0 0 4px 4px}
+.btn-wa-espera{background:#888}
+
+.footer{background:var(--dark);padding:1.2rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;border-top:1px solid #2e2820;margin-top:.5rem}
+.footer-logo{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--gold-light);letter-spacing:.18em}
+.footer-wa{display:flex;align-items:center;gap:.4rem;color:rgba(37,211,102,.75);font-size:.52rem;letter-spacing:.18em;text-decoration:none;text-transform:uppercase}
+
+.empty{grid-column:1/-1;text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.8rem;letter-spacing:.15em}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal-box{background:#f7f3ee;width:100%;max-width:360px;border-radius:8px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.3);max-height:90vh;display:flex;flex-direction:column}
+.modal-header{background:#1a1612;padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-header h3{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;color:#d4bc8e}
+.modal-header button{background:none;border:none;color:#8a7d6e;font-size:1.1rem;cursor:pointer;padding:.2rem}
+.modal-body{padding:1.2rem;overflow-y:auto;flex:1}
+.modal-field{margin-bottom:.85rem}
+.modal-field label{display:block;font-size:.54rem;letter-spacing:.22em;text-transform:uppercase;color:#8a7d6e;margin-bottom:.3rem}
+.modal-field input{width:100%;background:white;border:1px solid #e0d8ce;color:#1a1612;font-family:'Josefin Sans',sans-serif;font-size:1rem;padding:.5rem .7rem;outline:none;border-radius:2px;-webkit-appearance:none}
+.modal-field input:focus{border-color:#b89d6a}
+.modal-error{font-size:.65rem;color:#801D33;margin-top:.3rem;min-height:1rem}
+.modal-footer{padding:.8rem 1.2rem;border-top:1px solid #e0d8ce;display:flex;gap:.5rem;justify-content:flex-end;flex-shrink:0}
+.mbtn{padding:.5rem 1.2rem;font-family:'Josefin Sans',sans-serif;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;border:none;border-radius:2px;cursor:pointer}
+.mbtn-cancel{background:transparent;border:1px solid #e0d8ce;color:#8a7d6e}
+.mbtn-ok{background:#1a1612;color:#d4bc8e}
+.modal-ok-msg{font-size:.7rem;color:var(--green);text-align:center;padding:.5rem;letter-spacing:.1em}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-logo">Repliqué</div>
+    <div class="header-sub">Parfums &amp; Home</div>
+  </div>
+</div>
+
+<div class="filtros" id="filtros">
+  <button class="fbtn active" data-linea="all">Todos</button>
+  <button class="fbtn" data-linea="mujer">YD Mujer</button>
+  <button class="fbtn" data-linea="hombre">YD Hombre</button>
+  <button class="fbtn arab" data-linea="arabes">◆ Árabes</button>
+</div>
+<div class="busqueda"><input type="search" id="buscador" placeholder="Buscar perfume, réplica, notas..." autocomplete="off"></div>
+<div class="contador" id="contador"></div>
+<div class="grid" id="grid"></div>
+
+<div class="footer">
+  <span class="footer-logo">Repliqué</span>
+  <a href="https://wa.me/5492267406792" target="_blank" class="footer-wa">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.855L.057 23.5l5.793-1.448A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.369l-.36-.213-3.44.86.878-3.352-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>
+    Estefanía · 2267-406792
+  </a>
+</div>
+
+<!-- Modal aviso stock -->
+<div class="modal-overlay" id="modalAviso" onclick="if(event.target===this)cerrarAviso()">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Avisame cuando haya stock</h3><button onclick="cerrarAviso()">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:.7rem;color:#8a7d6e;margin-bottom:1rem;letter-spacing:.08em">Dejá tus datos y te aviso cuando esté disponible <span id="avisoProductoNombre" style="color:#1a1612;font-style:italic"></span></p>
+      <div class="modal-field"><label>Nombre</label><input type="text" id="avisoNombre" placeholder="Tu nombre"></div>
+      <div class="modal-field"><label>WhatsApp (código de área + número)</label><input type="tel" id="avisoWA" placeholder="2267123456"></div>
+      <div class="modal-error" id="avisoError"></div>
+      <div class="modal-ok-msg" id="avisoOk" style="display:none">¡Listo! Te aviso cuando haya stock 🌸</div>
+    </div>
+    <div class="modal-footer" id="avisoFooter">
+      <button class="mbtn mbtn-cancel" onclick="cerrarAviso()">Cancelar</button>
+      <button class="mbtn mbtn-ok" onclick="guardarAviso()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SHEET_ID = "1h4Qz-OmKKEBM6zJBiFUu9UPqVgrIhQZjhWGk_EYZt8I";
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+const WA = "5492267406792";
+const ARABES = "Árabes";
+let products = [];
+let activeLinea = "all";
+let avisoProducto = "";
+
+function fARS(n){return '$ '+Math.round(n).toLocaleString('es-AR');}
+function esc(s){if(!s)return '';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+async function cargarDesdeSheets() {
+  try {
+    const res = await fetch(CSV_URL);
+    const text = await res.text();
+    const lines = text.split('\n');
+    const headers = parseCsvLine(lines[0]);
+    const loaded = [];
+    for(let i=1;i<lines.length;i++) {
+      if(!lines[i].trim()) continue;
+      const cols = parseCsvLine(lines[i]);
+      const obj = {};
+      headers.forEach((h,idx)=>obj[h.trim()]=cols[idx]||'');
+      loaded.push({
+        id: obj.id,
+        nombre: obj.nombre,
+        linea: obj.linea,
+        genero: obj.genero,
+        ml: obj.ml,
+        notas: obj.notas,
+        precio_costo: parseFloat(obj.precio_costo)||0,
+        precio_venta: parseInt(obj.precio_venta)||0,
+        margen: parseInt(obj.margen)||120,
+        stock: parseInt(obj.stock)||0,
+        cantidad: parseInt(obj.cantidad)||0,
+        imagen: obj.imagen,
+        activo: obj.activo,
+        inspirado_en: obj.inspirado_en
+      });
+    }
+    return loaded;
+  } catch(e) {
+    return null;
+  }
+}
+
+function parseCsvLine(line) {
+  const result = [];
+  let cur = '', inQ = false;
+  for(let i=0;i<line.length;i++) {
+    const c = line[i];
+    if(c==='"') { inQ=!inQ; continue; }
+    if(c===','&&!inQ) { result.push(cur); cur=''; continue; }
+    cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+
+function hasStock(p) {
+  if(p.stock===0) return false;
+  if(p.cantidad<=0) return false;
+  return true;
+}
+
+function render() {
+  const q = document.getElementById('buscador').value.toLowerCase().trim();
+  let list = products.filter(p=>p.activo==='si');
+  
+  if(activeLinea==='mujer') list=list.filter(p=>p.linea!==ARABES&&p.genero==='Mujer');
+  else if(activeLinea==='hombre') list=list.filter(p=>p.linea!==ARABES&&p.genero==='Hombre');
+  else if(activeLinea==='arabes') list=list.filter(p=>p.linea===ARABES);
+  
+  if(q) list=list.filter(p=>(p.nombre||'').toLowerCase().includes(q)||(p.inspirado_en||'').toLowerCase().includes(q)||(p.notas||'').toLowerCase().includes(q));
+  
+  list.sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+  document.getElementById('contador').textContent=list.length+' producto'+(list.length!==1?'s':'');
+  
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  if(!list.length){grid.innerHTML='<div class="empty">No se encontraron perfumes</div>';return;}
+  
+  const showLinea=(activeLinea==='all');
+  list.forEach((p,i)=>{
+    const isArab=p.linea===ARABES;
+    const sp=p.precio_venta;
+    const foto=p.imagen?`<img src="${esc(p.imagen)}" alt="${esc(p.nombre)}" loading="lazy">`:'<div class="noimg">◎</div>';
+    const badgeTR=!hasStock(p)?'<span class="badge badge-tr b-nostock">Sin stock</span>':'<span class="badge badge-tr b-stock">En stock</span>';
+    let badgeTL='';
+    if(showLinea){
+      if(isArab) badgeTL='<span class="badge b-arabe" style="top:.5rem;left:.5rem">Árabe</span>';
+      else if(p.genero==='Mujer') badgeTL='<span class="badge b-mujer" style="top:.5rem;left:.5rem">Mujer</span>';
+      else badgeTL='<span class="badge b-hombre" style="top:.5rem;left:.5rem">Hombre</span>';
+    }
+    const waMsg=encodeURIComponent('Hola Estefanía! Me interesa *'+p.nombre+'*'+(p.inspirado_en?' (réplica de '+p.inspirado_en+')':'')+(p.ml?' · '+p.ml+'ml':'')+'.');
+    const SVG='<svg viewBox="0 0 24 24" width="13" height="13" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.855L.057 23.5l5.793-1.448A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.007-1.369l-.36-.213-3.44.86.878-3.352-.234-.374A9.818 9.818 0 1112 21.818z"/></svg>';
+    const btnWA=hasStock(p)?
+      `<a class="btn-wa" href="https://wa.me/${WA}?text=${waMsg}" target="_blank">${SVG}Consultar</a>`:
+      `<a class="btn-wa btn-wa-espera" href="javascript:void(0)" onclick="abrirAviso('${esc(p.nombre)||''}')"><span>🔔</span>Avisame cuando haya</a>`;
+    
+    const card=document.createElement('div');
+    card.className='card'+(hasStock(p)?'':' sinstock');
+    card.style.animationDelay=(i*.015)+'s';
+    card.innerHTML=`<div class="card-foto">${foto}${badgeTR}${badgeTL}</div><div class="card-body">${p.inspirado_en?'<span class="c-replica">'+esc(p.inspirado_en)+'</span>':''}<span class="c-nombre">${esc(p.nombre)}</span>${p.ml?'<span class="c-ml">'+esc(p.ml)+' ml</span>':''}<div class="c-precio"><span class="c-precio-val${hasStock(p)?'':' nostock'}">${fARS(sp)}</span></div></div>${btnWA}`;
+    grid.appendChild(card);
+  });
+}
+
+document.getElementById('filtros').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-linea]');
+  if(btn){
+    document.querySelectorAll('.fbtn[data-linea]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    activeLinea=btn.getAttribute('data-linea');
+    render();
+  }
+});
+document.getElementById('buscador').addEventListener('input',render);
+
+function abrirAviso(nombre){
+  avisoProducto=nombre;
+  document.getElementById('avisoProductoNombre').textContent=nombre?'"'+nombre+'"':'';
+  document.getElementById('avisoNombre').value='';
+  document.getElementById('avisoWA').value='';
+  document.getElementById('avisoError').textContent='';
+  document.getElementById('avisoOk').style.display='none';
+  document.getElementById('avisoFooter').style.display='flex';
+  document.getElementById('modalAviso').classList.add('open');
+  setTimeout(()=>document.getElementById('avisoNombre').focus(),200);
+}
+function cerrarAviso(){document.getElementById('modalAviso').classList.remove('open');}
+
+async function guardarAviso(){
+  const nombre=document.getElementById('avisoNombre').value.trim();
+  const wa=document.getElementById('avisoWA').value.trim();
+  if(!nombre||!wa){document.getElementById('avisoError').textContent='Por favor completá nombre y WhatsApp';return;}
+  
+  document.getElementById('avisoError').textContent='';
+  // Guardar via URL de Google Apps Script (cuando esté configurado)
+  // Por ahora notifica por WA directamente a Estefanía
+  const msg=encodeURIComponent('📋 LISTA DE ESPERA\nProducto: '+avisoProducto+'\nCliente: '+nombre+'\nWhatsApp: '+wa);
+  window.open('https://wa.me/${WA}?text='+msg,'_blank');
+  
+  document.getElementById('avisoOk').style.display='block';
+  document.getElementById('avisoFooter').style.display='none';
+  setTimeout(cerrarAviso,3000);
+}
+
+async function init(){
+  const loaded=await cargarDesdeSheets();
+  if(loaded&&loaded.length>0){
+    products=loaded;
+  } else {
+    // Fallback con datos del CSV original
+    products=[];
+  }
+  render();
+}
+init();
+</script>
+</body>
+</html>
