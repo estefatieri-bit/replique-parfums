@@ -162,12 +162,14 @@ body{background:var(--cream);color:var(--dark);font-family:'Josefin Sans',sans-s
   <button class="atab" data-tab="falta" onclick="mostrarTab('falta')">En falta</button>
   <button class="atab" data-tab="espera" onclick="mostrarTab('espera')">Lista de espera</button>
   <button class="atab" data-tab="pedido" onclick="mostrarTab('pedido')">Pedido</button>
+  <button class="atab" data-tab="ventas" onclick="mostrarTab('ventas')">Ventas</button>
 </div>
 <div class="busqueda"><input type="search" id="buscador" placeholder="Buscar perfume, réplica, notas..." autocomplete="off"></div>
 <div class="contador" id="contador"></div>
 <div class="grid" id="grid"></div>
 <div id="esperaPanel" style="display:none;padding:0 1rem 2rem;max-width:560px;margin:0 auto"></div>
 <div id="pedidoPanel" style="display:none;padding:0 1rem 2rem;max-width:560px;margin:0 auto"></div>
+<div id="ventasPanel" style="display:none;padding:0 1rem 2rem;max-width:560px;margin:0 auto"></div>
 
 <button class="btn-info-flotante" onclick="document.getElementById('infoOverlay').classList.add('open')">i</button>
 <a class="btt" id="btt" href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑</a>
@@ -412,7 +414,7 @@ var adminToken="";
 function syncProductoASheet(p){
   try{
     var m=p.margin||2.2;
-    var regP=Math.round((p.costPrice||0)*m);
+    var regP=Math.ceil((p.costPrice||0)*m/100)*100;
     var sp=p.onOffer?Math.ceil((p.costPrice||0)*m*0.82/100)*100:regP;
     var qty=getTotalQty(p); if(qty===null||qty===undefined) qty=p.inStock?1:0;
     var prod={id:p.id,precio_costo:p.costPrice||0,margen:Math.round((m-1)*100),precio_venta:sp,stock:p.inStock?1:0,cantidad:qty,activo:(p.activo==='no'?'no':'si'),oferta:(p.onOffer?'si':'no'),mas_vendido:(p.topSeller?'si':'no')};
@@ -454,7 +456,7 @@ function render(){
   list.forEach(function(p,i){
     var isArab=p.line===ARABES;
     var m=p.margin||2.2;
-    var regP=Math.round(p.costPrice*m);
+    var regP=Math.ceil(p.costPrice*m/100)*100;
     var sp=p.onOffer?Math.ceil(p.costPrice*m*0.82/100)*100:regP;
 
     var foto=p.imgSrc?'<img src="'+p.imgSrc+'" alt="'+esc(p.name)+'" loading="lazy">':'<div class="noimg">◎</div>';
@@ -495,7 +497,7 @@ document.getElementById('filtros').addEventListener('click',function(e){
 document.getElementById('buscador').addEventListener('input',render);
 
 function toggleAdmin(){
-  if(isAdmin){isAdmin=false;soloFalta=false;document.getElementById('adminBtn').textContent='⚙ Admin';document.getElementById('adminBtn').classList.remove('active');document.getElementById('adminTabs').style.display='none';document.getElementById('esperaPanel').style.display='none';document.getElementById('pedidoPanel').style.display='none';document.getElementById('grid').style.display='';document.querySelector('.busqueda').style.display='';document.getElementById('contador').style.display='';render();}
+  if(isAdmin){isAdmin=false;soloFalta=false;document.getElementById('adminBtn').textContent='⚙ Admin';document.getElementById('adminBtn').classList.remove('active');document.getElementById('adminTabs').style.display='none';document.getElementById('esperaPanel').style.display='none';document.getElementById('pedidoPanel').style.display='none';document.getElementById('ventasPanel').style.display='none';document.getElementById('grid').style.display='';document.querySelector('.busqueda').style.display='';document.getElementById('contador').style.display='';render();}
   else{document.getElementById('inputPin').value='';document.getElementById('pinError').textContent='';document.getElementById('modalLogin').classList.add('open');setTimeout(function(){document.getElementById('inputPin').focus();},200);}
 }
 function cerrarInfo(){document.getElementById('infoOverlay').classList.remove('open');}
@@ -855,16 +857,18 @@ var esperaCache = [];
 function mostrarTab(tab){
   var t=document.querySelectorAll('#adminTabs .atab');
   for(var i=0;i<t.length;i++){ t[i].classList.toggle('active', t[i].getAttribute('data-tab')===tab); }
-  var esEspera=(tab==='espera'), esPedido=(tab==='pedido');
+  var esEspera=(tab==='espera'), esPedido=(tab==='pedido'), esVentas=(tab==='ventas');
   soloFalta=(tab==='falta');
-  var enGrid=(!esEspera&&!esPedido);
+  var enGrid=(!esEspera&&!esPedido&&!esVentas);
   document.getElementById('grid').style.display = enGrid?'':'none';
   document.querySelector('.busqueda').style.display = (enGrid&&!soloFalta)?'':'none';
   document.getElementById('contador').style.display = enGrid?'':'none';
   document.getElementById('esperaPanel').style.display = esEspera?'block':'none';
   document.getElementById('pedidoPanel').style.display = esPedido?'block':'none';
+  document.getElementById('ventasPanel').style.display = esVentas?'block':'none';
   if(esEspera) cargarEspera();
   else if(esPedido) renderPedido();
+  else if(esVentas) abrirVentas();
   else render();
 }
 
@@ -913,6 +917,7 @@ function renderEspera(rows){
       +(avisado
         ? '<div style="margin-top:.55rem;font-size:.7rem;color:#9ac97a;letter-spacing:.06em">✓ Cliente avisado</div>'
         : '<button onclick="avisarCliente('+r.fila+',this)" data-perf="'+esc(r.perfume||'')+'" data-cli="'+esc(r.cliente||'')+'" data-tel="'+esc(r.telefono||'')+'" style="margin-top:.6rem;width:100%;padding:.55rem;background:#25D366;border:none;border-radius:4px;color:#fff;font-family:inherit;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer">Avisar por WhatsApp</button>')
+      +'<button onclick="borrarEspera('+r.fila+')" style="margin-top:.4rem;width:100%;padding:.4rem;background:transparent;border:1px solid #6e4a4a;border-radius:4px;color:#c98a8a;font-family:inherit;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">Eliminar</button>'
       +'</div>';
   });
   panel.innerHTML=html;
@@ -932,6 +937,15 @@ function avisarCliente(fila, btn){
   fetch(AVISO_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'avisar',fila:fila})}).catch(function(){});
   for(var i=0;i<esperaCache.length;i++){ if(esperaCache[i].fila===fila) esperaCache[i].avisado='si'; }
   renderEspera(esperaCache);
+}
+
+function borrarEspera(fila){
+  if(!confirm('¿Eliminar este pedido de la lista de espera?')) return;
+  fetch(AVISO_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'borrar',fila:fila})}).catch(function(){});
+  esperaCache=esperaCache.filter(function(x){return x.fila!==fila;});
+  esperaCache.forEach(function(x){ if(x.fila>fila) x.fila-=1; });
+  renderEspera(esperaCache);
+  mostrarToast('Pedido eliminado \u2713');
 }
 
 function contarEspera(nombre){
@@ -980,6 +994,99 @@ function copiarFallback(txt){
   document.body.appendChild(ta); ta.focus(); ta.select();
   try{ document.execCommand('copy'); mostrarToast('Lista copiada \u2713'); }catch(e){ mostrarToast('No se pudo copiar'); }
   document.body.removeChild(ta);
+}
+
+/* ===== Ventas ===== */
+function precioVentaDe(p){
+  var m=p.margin||2.2;
+  var regP=Math.ceil((p.costPrice||0)*m/100)*100;
+  return p.onOffer?Math.ceil((p.costPrice||0)*m*0.82/100)*100:regP;
+}
+function abrirVentas(){
+  var panel=document.getElementById('ventasPanel');
+  var opts=products.slice().sort(function(a,b){return a.name.localeCompare(b.name,'es');})
+    .map(function(p){return '<option value="'+p.id+'">'+esc(p.name)+'</option>';}).join('');
+  panel.innerHTML=
+    '<div style="background:#1a1410;border:1px solid #6e6253;border-radius:8px;padding:1rem;margin-bottom:1rem;color:#f0e8da">'
+    +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:1.2rem;color:#d4bc8e;margin-bottom:.7rem">Registrar venta</div>'
+    +'<label style="font-size:.62rem;color:#a09484;text-transform:uppercase;letter-spacing:.08em">Perfume</label>'
+    +'<select id="ventaPerfume" onchange="recalcVenta()" style="width:100%;margin:.2rem 0 .7rem;padding:.5rem;background:#0f0c0a;border:1px solid #6e6253;border-radius:4px;color:#f0e8da;font-family:inherit;font-size:.85rem">'+opts+'</select>'
+    +'<label style="font-size:.62rem;color:#a09484;text-transform:uppercase;letter-spacing:.08em">Cantidad</label>'
+    +'<input type="number" id="ventaCant" value="1" min="1" onchange="recalcVenta()" oninput="recalcVenta()" style="width:100%;margin:.2rem 0 .7rem;padding:.5rem;background:#0f0c0a;border:1px solid #6e6253;border-radius:4px;color:#f0e8da;font-family:inherit;font-size:.85rem">'
+    +'<label style="font-size:.62rem;color:#a09484;text-transform:uppercase;letter-spacing:.08em">Forma de pago</label>'
+    +'<select id="ventaMetodo" onchange="recalcVenta()" style="width:100%;margin:.2rem 0 .8rem;padding:.5rem;background:#0f0c0a;border:1px solid #6e6253;border-radius:4px;color:#f0e8da;font-family:inherit;font-size:.85rem"><option>Efectivo</option><option>Transferencia</option><option>Cuenta DNI</option></select>'
+    +'<div id="ventaResumen" style="font-size:.8rem;color:#f0dca0;margin-bottom:.8rem"></div>'
+    +'<button onclick="registrarVenta()" style="width:100%;padding:.65rem;background:#d4bc8e;border:none;border-radius:5px;color:#1a1410;font-family:inherit;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer">Registrar venta</button>'
+    +'</div>'
+    +'<div id="ventasResumenBox" style="color:#f0e8da"><p style="text-align:center;color:#a09484;font-size:.8rem;padding:1rem">Cargando resumen…</p></div>';
+  recalcVenta();
+  cargarVentas();
+}
+function ventaSeleccionada(){
+  var id=document.getElementById('ventaPerfume').value;
+  for(var i=0;i<products.length;i++){ if(String(products[i].id)===String(id)) return products[i]; }
+  return null;
+}
+function recalcVenta(){
+  var p=ventaSeleccionada(); if(!p) return;
+  var cant=parseInt(document.getElementById('ventaCant').value,10)||0;
+  var met=document.getElementById('ventaMetodo').value;
+  var unit=precioVentaDe(p);
+  var total=unit*cant;
+  var com=(met==='Cuenta DNI')?Math.round(total*0.006):0;
+  var neto=total-com;
+  var txt='Precio unitario: '+fARS(unit)+' · Total: '+fARS(total);
+  if(com>0) txt+='<br>Comisión Cuenta DNI (0,6%): -'+fARS(com)+' · <b>Te ingresan: '+fARS(neto)+'</b>';
+  document.getElementById('ventaResumen').innerHTML=txt;
+}
+function registrarVenta(){
+  var p=ventaSeleccionada(); if(!p){ mostrarToast('Elegí un perfume'); return; }
+  var cant=parseInt(document.getElementById('ventaCant').value,10)||0;
+  if(cant<1){ mostrarToast('Cantidad inválida'); return; }
+  var met=document.getElementById('ventaMetodo').value;
+  var unit=precioVentaDe(p);
+  var total=unit*cant;
+  var com=(met==='Cuenta DNI')?Math.round(total*0.006):0;
+  var neto=total-com;
+  fetch(AVISO_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'venta',perfume:p.name,cantidad:cant,metodo:met,monto:total,comision:com,neto:neto})}).catch(function(){});
+  // descontar stock
+  var actual=getTotalQty(p); if(actual===null||actual===undefined) actual=p.inStock?cant:0;
+  var nuevo=actual-cant; if(nuevo<0) nuevo=0;
+  p.qty=nuevo; p.lotes=[]; if(nuevo<=0) p.inStock=false;
+  saveCambios(); syncProductoASheet(p);
+  mostrarToast('Venta registrada \u2713');
+  document.getElementById('ventaCant').value='1';
+  setTimeout(cargarVentas,1200);
+  recalcVenta();
+}
+function cargarVentas(){
+  var box=document.getElementById('ventasResumenBox'); if(!box) return;
+  var url='https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?tqx=out:csv&sheet=ventas&t='+Date.now();
+  fetch(url).then(function(r){return r.text();}).then(function(txt){
+    var rows=_parseCSV(txt);
+    if(rows.length<2){ box.innerHTML='<p style="text-align:center;color:#a09484;font-size:.82rem;padding:1rem">Todavía no hay ventas registradas.</p>'; return; }
+    var h=rows[0].map(function(x){return (''+(x||'')).toLowerCase().trim();});
+    var iP=h.indexOf('perfume'),iC=h.indexOf('cantidad'),iM=h.indexOf('metodo'),iMo=h.indexOf('monto'),iN=h.indexOf('neto');
+    var ingresos=0,neto=0,unidades=0,porPerf={},porMet={};
+    for(var k=1;k<rows.length;k++){
+      var r=rows[k]; if(!r||(iP>=0&&!r[iP])) continue;
+      var c=parseInt(r[iC],10)||0, mo=parseFloat(r[iMo])||0, ne=parseFloat(r[iN])||0, nm=r[iP]||'', me=r[iM]||'';
+      ingresos+=mo; neto+=ne; unidades+=c;
+      porPerf[nm]=(porPerf[nm]||0)+c;
+      porMet[me]=(porMet[me]||0)+ne;
+    }
+    var html='<div style="background:#1a1410;border:1px solid #6e6253;border-radius:8px;padding:1rem;color:#f0e8da">'
+      +'<div style="font-family:\'Cormorant Garamond\',serif;font-size:1.2rem;color:#d4bc8e;margin-bottom:.6rem">Resumen de ventas</div>'
+      +'<div style="font-size:.85rem;line-height:1.7">Unidades vendidas: <b>'+unidades+'</b><br>Ingreso bruto: <b>'+fARS(ingresos)+'</b><br>Ingreso neto (después de comisiones): <b style="color:#9ac97a">'+fARS(neto)+'</b></div>';
+    var mets=Object.keys(porMet);
+    if(mets.length){ html+='<div style="margin-top:.7rem;font-size:.7rem;color:#a09484;text-transform:uppercase;letter-spacing:.06em">Por forma de pago (neto)</div><div style="font-size:.82rem;line-height:1.6">';
+      mets.forEach(function(m){ html+=esc(m)+': '+fARS(porMet[m])+'<br>'; }); html+='</div>'; }
+    var perfs=Object.keys(porPerf).sort(function(a,b){return porPerf[b]-porPerf[a];});
+    html+='<div style="margin-top:.7rem;font-size:.7rem;color:#a09484;text-transform:uppercase;letter-spacing:.06em">Unidades por perfume</div><div style="font-size:.82rem;line-height:1.6">';
+    perfs.forEach(function(nm){ html+=esc(nm)+': <b>'+porPerf[nm]+'</b><br>'; });
+    html+='</div></div>';
+    box.innerHTML=html;
+  }).catch(function(){ box.innerHTML='<p style="text-align:center;color:#c97a7a;font-size:.8rem;padding:1rem">No se pudo cargar el resumen.</p>'; });
 }
 
 function nudgeEspera(nombre){
